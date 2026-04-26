@@ -4,7 +4,7 @@
 
 
 
-**OMNI-Rec 是首个基于完全开源的OneRec**生成式推荐**框架，提供覆盖 **语义 ID（SID）构建**、**监督微调（SFT）** 以及面向推荐的**强化学习（RL）** 的E2E完整工作流。
+**OMNI-Rec 是基于首个开源 OneRec**生成式推荐**框架，覆盖 **语义ID（SID）构建** + **监督微调（SFT）** + 面向推荐 **强化学习 (RL)** 的E2E工作流
 
 ![Kuaishou Rec](https://img.shields.io/badge/Inspired-KuaishouRecSystem-orange)
 ![ByteDance](https://img.shields.io/badge/Inspired-ByteDance-blue)
