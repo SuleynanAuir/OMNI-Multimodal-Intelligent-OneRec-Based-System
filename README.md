@@ -1,10 +1,9 @@
 <div align="center">
 
+<img src="./assets/ChatGPT Image Apr 26, 2026, 11_57_26 PM_copy.png" width="500em" ></img> 
 
-<img src="./assets/ChatGPT Image Apr 26, 2026, 11_57_26 PM.png" width="500em" ></img> 
 
-
-**面向生成式推荐规模化的开源框架: 本项目基于Tiktok、Instagram、快手等 OneRec 的生成式内容推荐范式，探索将推荐系统统一建模为序列生成与偏好对齐问题，通过 Semantic ID 实现多模态内容与用户行为的统一表示，并结合强化学习驱动的 Reward 机制进行端到端优化。在此基础上，引入生成式建模与上下文感知能力，实现从传统判别式推荐向生成式、可推理推荐系统的范式跃迁，为大规模推荐系统提供高效、可扩展的统一建模框架。**
+**🤖 面向生成式推荐规模化的开源框架: 本项目基于 Tiktok、Instagram、快手等 OneRec 的生成式内容推荐范式，探索将推荐系统统一建模为序列生成与偏好对齐问题，通过 Semantic ID 实现多模态内容与用户行为的统一表示，并结合强化学习驱动的 Reward 机制进行端到端优化。**
 
 ![Kuaishou Rec](https://img.shields.io/badge/Inspired-KuaishouRecSystem-orange)
 ![ByteDance](https://img.shields.io/badge/Inspired-ByteDance-blue)
