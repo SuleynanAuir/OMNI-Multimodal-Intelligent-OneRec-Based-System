@@ -20,7 +20,16 @@
 
 </div>
 
-🌟 整体模型学习流程: SFT → RL → Eval 是递进关系，但不是“数据传递”，而是“模型能力逐步升级”
+## 🧭 导航
+
+- [第一部分：快速上手 · 环境配置与文件运行](#第一部分快速上手--环境配置与文件运行)
+- [第二部分：推荐系统核心知识 · 技术原理与行业实践](#第二部分推荐系统核心知识--技术原理与行业实践)
+
+---
+
+## 🌟 训练范式概览
+
+> 整体模型学习流程：`SFT → RL → Eval` 是递进关系，但不是“数据传递”，而是“模型能力逐步升级”。
 
 基础编码方式进化：
 [![RQ-VAE + Balanced K-Means Operation](https://img.shields.io/badge/RQ--VAE-Documentation-blue)](./rq/README.md)
@@ -32,14 +41,14 @@
 | Evaluate | - | 模型评估 | 无（推理） | 训练好的模型 | 指标 + 图表 | ❌ |
 
 - SFT：基础推荐 root model 仅模拟模仿历史数据（behavior cloning），不会考虑RL中的长期收益
-- RL: 学习“推荐策略（policy）”，最大化长期收益:
-	- 将 SFT训练好的 root Model + 模拟用户交互环境【真实数据：(user, history, recommended_item, clicked, dwell_time, ...) —— root model ——> 模型输出推荐列表 a_t】 + 设计好的reward（点击、停留、转发）
-	- 得到一个“更聪明”的推荐策略模型 （RL-Enhanced Model）
-- Eval: 评估行为阶段
+- RL：学习“推荐策略（policy）”，最大化长期收益：
+  - 将 SFT训练好的 root Model + 模拟用户交互环境【真实数据：(user, history, recommended_item, clicked, dwell_time, ...) —— root model ——> 模型输出推荐列表 a_t】 + 设计好的reward（点击、停留、转发）
+  - 得到一个“更聪明”的推荐策略模型 （RL-Enhanced Model）
+- Eval：评估行为阶段
 
 ---
 
-🔥 SFT → RL 衔接机制（KL 约束 + PPO）
+## 🔥 SFT → RL 衔接机制（KL 约束 + PPO）
 
 在生成式推荐系统（如 MiniOneRec / OneRec）中，  
 SFT → RL 的衔接核心在两条主线：
@@ -47,23 +56,17 @@ SFT → RL 的衔接核心在两条主线：
 - KL 散度约束（Stability）
 - PPO（Policy Optimization）
 
----
-
-🧠 1. 核心思想
+### 🧠 1. 核心思想
 
 SFT（监督学习）$\pi_{\text{SFT}}(a \mid s) \approx \text{User Behavior}$
 
 👉 本质：根据用户历史（history + user）预测下一步行为（推荐序列）
 
----
-
 Rec-RL（强化学习）$\max \mathbb{E}_{\pi_\theta}[R]$
 
 👉 本质：不只是“用户会点什么”，而是“推荐什么更好”
 
----
-
-⚠️ 2. 为什么需要 KL 约束？
+### ⚠️ 2. 为什么需要 KL 约束？
 
 如果只优化 Reward：
 
@@ -73,9 +76,7 @@ Rec-RL（强化学习）$\max \mathbb{E}_{\pi_\theta}[R]$
 
 👉 解决方案：在 RL 中加入 KL 散度约束，让模型不要偏离 SFT 太远
 
----
-
-🔥 3. RL + KL 统一目标
+### 🔥 3. RL + KL 统一目标
 
 $\mathcal{L}_{\text{RL}} = - \mathbb{E}_{\pi_\theta}[R] + \beta \cdot \mathrm{KL}(\pi_\theta \parallel \pi_{\text{ref}})$
 
@@ -88,9 +89,7 @@ $\mathcal{L}_{\text{RL}} = - \mathbb{E}_{\pi_\theta}[R] + \beta \cdot \mathrm{KL
 
 👉 直觉：让 reward 高，同时不要偏离 SFT
 
----
-
-🧠 4. Token-Level KL（关键）
+### 🧠 4. Token-Level KL（关键）
 
 $\mathrm{KL}_t =\log \pi_\theta(a_t \mid s_t)-\log \pi_{\text{ref}}(a_t \mid s_t)$
 
@@ -98,9 +97,7 @@ $\mathrm{KL}_t =\log \pi_\theta(a_t \mid s_t)-\log \pi_{\text{ref}}(a_t \mid s_t
 
 👉 本质：把 KL 当成负奖励（penalty）
 
----
-
-🚀 5. PPO（策略优化）
+### 🚀 5. PPO（策略优化）
 
 $\mathcal{L}_{\text{PPO}} = -\mathbb{E} \Big[\min(r_t A_t,\ \text{clip}(r_t, 1-\epsilon, 1+\epsilon) A_t)\Big]$
 
@@ -112,53 +109,54 @@ $\mathcal{L}_{\text{PPO}} = -\mathbb{E} \Big[\min(r_t A_t,\ \text{clip}(r_t, 1-\
 
 👉 作用：防止策略更新过大，保证稳定训练
 
----
+### 🔗 6. SFT → RL 完整流程
 
-🔗 6. SFT → RL 完整流程
+1. 训练 SFT：得到初始化策略 π_ref  
+   ↓  
+2. 初始化 π_θ ← π_ref  
+   ↓  
+3. 用当前 π_θ 生成推荐序列（tokens）  
+   ↓  
+4. 计算 reward R（点击 / 停留 / 指标）  
+   ↓  
+5. 计算 KL：  
+   KL_t = logπθ(at|st) − logπref(at|st)  
+   ↓  
+6. 得到修正奖励：  
+   R' = R − β·KL  
+   ↓  
+7. 用 PPO 更新策略 π_θ  
+   ↓  
+8. 重复
 
-(1) 训练 SFT：得到初始化策略 π_ref  
-        ↓  
-(2) 初始化 π_θ ← π_ref  
-        ↓  
-(3) 用当前 π_θ 生成推荐序列（tokens）  
-        ↓  
-(4) 计算 reward R（点击 / 停留 / 指标）  
-        ↓  
-(5) 计算 KL：  
-        KL_t = logπθ(at|st) − logπref(at|st)  
-        ↓  
-(6) 得到修正奖励：  
-        R' = R − β·KL  
-        ↓  
-(7) 用 PPO 更新策略 π_θ  
-        ↓  
-(8) 重复  
-
----
-
-🧠 7. 直观理解
+### 🧠 7. 直观理解
 
 - SFT：用户“会怎么做”  
 - RL：系统“应该怎么做”  
 - KL：不要偏离用户太远  
-- PPO：稳定更新策略  
+- PPO：稳定更新策略
 
----
-
-🔥 8. 一句话总结
+### 🔥 8. 一句话总结
 
 SFT learns to imitate user behavior, RL optimizes long-term reward, and KL regularization ensures the policy remains aligned with the original behavior distribution while PPO guarantees stable updates.
 
----
-
-🚀 9. 核心认知
+### 🚀 9. 核心认知
 
 RL 不是替代 SFT，而是在 SFT 基础上的“受约束优化（Constrained Optimization）”
-
 
 ---
 
 # 第一部分：快速上手 · 环境配置与文件运行
+
+## 📚 第一部分目录
+
+- 📢 更新日志
+- 🗂️ 仓库目录结构
+- 🚀 快速开始
+- 📜 完整流水线详解
+- 🩺 常见问题与解决方案
+- 🤖 支持的 LLM 提供商
+- 📝 路线图
 
 ## 📢 更新日志
 
@@ -590,9 +588,18 @@ get_res_batch("MiniMax-M2.7", prompt_list, max_tokens=512, api_info=None)
 
 ---
 
----
-
 # 第二部分：推荐系统核心知识 · 技术原理与行业实践
+
+## 📚 第二部分目录
+
+- 一、推荐系统概述
+- 二、语义 ID（Semantic ID / SID）技术
+- 三、生成式推荐的训练范式
+- 四、约束解码（Constrained Decoding）
+- 五、推荐系统评估指标体系
+- 六、序列推荐建模
+- 七、知识蒸馏与模型压缩
+- 八、工业级推荐系统架构参考
 
 ---
 
